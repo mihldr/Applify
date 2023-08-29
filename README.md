@@ -18,7 +18,7 @@ DISCORD_CLIENT_ID=...
 7. Use the command `/create-application-channel` in a discord channel and follow the instructions
 
 # Recommended Discord-Setup
-Create a new category called `Applications`. Deny View-permissions to guests/_everyone_ for this category but grant those permissions to your member role.
+Create a new category called `Applications`. Deny View-permissions to guests/_everyone_ for the entire category but grant those permissions to your member role.  
 Create a new channel called `application` within the `Applications` category. Grant _everyone_ view permissions to this channel but deny writing messages for everyone. This will also be the channel you'll use the `/create-application-channel` command in.  
 Create a new channel called `votes` within the `Applications` category. Grant your Member-Role view and write permissions to this channel.  
   
