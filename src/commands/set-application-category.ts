@@ -27,32 +27,61 @@ const command: ICommand = {
 		let interaction = i as ChatInputCommandInteraction
 
 		return new Promise(async (resolve) => {
+			let missingPermissions: {category: string[], vote: string[], introduction: string[]} = {category: [], vote: [], introduction: []};
+
 			// Check if member has admin permissions
 			if(!(interaction.member as GuildMember).permissions.has("Administrator"))
 				return resolve({status: false, message: "Only Administrators are able to use this command!"})
 
-			// Check if bot has permissions to send messages in the channel the command was executed in.
-			if(!(interaction.channel as TextChannel).permissionsFor(interaction.guild!.members.me!).has(PermissionsBitField.Flags.SendMessages))
-				return resolve({status: false, message: `The bot is missing permissions to send messages into this channel!`, ephermal: true})
-
-			// Check if bot has permissions to send messages in into the vote channel
-			if(!(interaction.options.getChannel("vote-channel") as TextChannel).permissionsFor(interaction.guild!.members.me!).has(PermissionsBitField.Flags.SendMessages))
-				return resolve({status: false, message: `The bot is missing permissions to send messages into the vote channel!`, ephermal: true})
-
-			// Check if bot has permissions to react onto messages in into the vote channel
-			if(!(interaction.options.getChannel("vote-channel") as TextChannel).permissionsFor(interaction.guild!.members.me!).has(PermissionsBitField.Flags.AddReactions))
-				return resolve({status: false, message: `The bot is missing permissions to react on messages in the vote channel!`, ephermal: true})	
-
-			// Check if tagged channel is a category
-			let taggedChannel = interaction.options.getChannel("application-category")
-			if(!(taggedChannel instanceof CategoryChannel))
+			// Check if tagged channel IS CATEGORY
+			let taggedCategory = interaction.options.getChannel("application-category") as CategoryChannel
+			if(!(taggedCategory instanceof CategoryChannel))
 				return resolve({status: false, message: `The tagged channel is not a category!`, ephermal: true})
 
-			// Check if bot has permission to create channels in category
-			let category = taggedChannel as CategoryChannel
-			let createChannelsPermitted = category.permissionsFor(interaction.guild!.members.me!).has(PermissionsBitField.Flags.ManageChannels)
-			if(!createChannelsPermitted)
-				return resolve({status: false, message: `The bot is missing permission to manage channels in the tagged category.`, ephermal: true})
+			// Check if bot has permissions to VIEW CATEGORY
+			if(!(taggedCategory.permissionsFor(interaction.guild!.members.me!).has(PermissionsBitField.Flags.ViewChannel)))
+				missingPermissions.category.push("View Channel")
+			// Check if bot has permissions to MANAGE CHANNELS IN CATEGORY
+			if(!(taggedCategory.permissionsFor(interaction.guild!.members.me!).has(PermissionsBitField.Flags.ManageChannels)))
+				missingPermissions.category.push("Manage Channels")
+			// Check if bot has permissions to MANAGE PERMISSIONS IN CATEGORY
+			if(!(taggedCategory.permissionsFor(interaction.guild!.members.me!).has(PermissionsBitField.Flags.ManageRoles)))
+				missingPermissions.category.push("Manage Permissions")
+
+			// Check if bot has permissions to VIEW INTRODUCTION-CHANNEL
+			if(!(interaction.channel as TextChannel).permissionsFor(interaction.guild!.members.me!).has(PermissionsBitField.Flags.ViewChannel))
+				missingPermissions.introduction.push("View Channel");
+			// Check if bot has permissions to SEND MESSAGES IN INTRODUCTION
+			if(!(interaction.channel as TextChannel).permissionsFor(interaction.guild!.members.me!).has(PermissionsBitField.Flags.SendMessages))
+				missingPermissions.introduction.push("Send Messages");
+
+			// Check if bot has permissions to VIEW VOTE-CHANNEL
+			if(!(interaction.options.getChannel("vote-channel") as TextChannel).permissionsFor(interaction.guild!.members.me!).has(PermissionsBitField.Flags.ViewChannel))
+				missingPermissions.vote.push("View Channel")
+			// Check if bot has permissions to SEND MESSAGES IN VOTE
+			if(!(interaction.options.getChannel("vote-channel") as TextChannel).permissionsFor(interaction.guild!.members.me!).has(PermissionsBitField.Flags.SendMessages))
+				missingPermissions.vote.push("Send Messages")
+			// Check if bot has permissions to REACT ONTO MESSAGES IN VOTE
+			if(!(interaction.options.getChannel("vote-channel") as TextChannel).permissionsFor(interaction.guild!.members.me!).has(PermissionsBitField.Flags.AddReactions))
+				missingPermissions.vote.push("Add Reactions")
+
+			// Check if bot has any missing permissions across all relevant channels/category. If so provide a list of missing permissions
+			if(missingPermissions.category.length || missingPermissions.vote.length || missingPermissions.introduction.length) {
+				return resolve({status: false, ephermal: true, message: `
+					The bot is missing permissions in order to function. These are the ones the bot needs to have:
+
+					**Category (${taggedCategory.toString()}):**
+					${missingPermissions.category.map(el => `- \`${el}\``).join("\n")}
+
+					**Vote-Channel (${interaction.options.getChannel("vote-channel")!.toString()}):**
+					${missingPermissions.vote.map(el => `- \`${el}\``).join("\n")}
+
+					**Introduction-Channel (${interaction.channel!.toString()}):**
+					${missingPermissions.introduction.map(el => `- \`${el}\``).join("\n")}
+
+					Please fix these permissions and try to execute this command again.
+				`.replaceAll("	", "")})
+			}
 
 
 			return resolve({status: true})
@@ -67,7 +96,6 @@ const command: ICommand = {
 			let category = interaction.options.getChannel("application-category") as CategoryChannel
 			let channel = interaction.channel as TextChannel
 			let voteChannel = interaction.options.getChannel("vote-channel") as TextChannel
-	
 	
 			// Button Row
 			const row = new ActionRowBuilder()
