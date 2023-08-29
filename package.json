@@ -1,0 +1,18 @@
+{
+	"devDependencies": {
+		"typescript": "^4.9.5"
+	},
+	"scripts": {
+		"watch": "npx tsc -w",
+		"run-ts": "rm -rf ./build/ && tsc && cp .env ./build/.env && node ./build/index.js",
+		"run": "node ./build/index.js"
+	},
+	"dependencies": {
+		"dedent-js": "^1.0.1",
+		"discord.js": "^14.9.0",
+		"dotenv": "^16.0.3",
+		"moment": "^2.29.4",
+		"mysql2": "^3.2.0",
+		"winston": "^3.8.2"
+	}
+}
