@@ -5,7 +5,10 @@ interface IGuildConfig {
 	applicationMessage: {[channelId: string]: {
 		applicationCategory: string
 		voteChannel: string
-		openApplicants: {channelId: string, memberId: string}[]
+		openApplicants: {channelId: string, memberId: string}[],
+		introductionTitle: string|undefined,
+		introductionContent: string|undefined,
+		initialApplicationText: string|undefined,
 	}}
 }
 

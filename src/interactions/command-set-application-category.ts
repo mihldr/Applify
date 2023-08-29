@@ -1,11 +1,11 @@
-import { ChatInputCommandInteraction, CacheType, SlashCommandBuilder, GuildMember, TextChannel, CategoryChannel, PermissionsBitField, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, Interaction } from "discord.js";
+import { ChatInputCommandInteraction, CacheType, SlashCommandBuilder, GuildMember, TextChannel, CategoryChannel, PermissionsBitField, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, Interaction, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRow } from "discord.js";
 import { GuildConfigManager, IGuildConfigExtra } from "../GuildConfig";
-import { ICommand } from "../ICommand";
+import { IInteraction } from "../IInteraction";
 import { IPromiseStatus } from "../IPromiseStatus";
 
 
 const commandName = "create-application-channel"
-const command: ICommand = {
+const command: IInteraction = {
 	name: commandName,
 	slashCommand: new SlashCommandBuilder()
 		.setName(commandName)
@@ -96,7 +96,7 @@ const command: ICommand = {
 			let category = interaction.options.getChannel("application-category") as CategoryChannel
 			let channel = interaction.channel as TextChannel
 			let voteChannel = interaction.options.getChannel("vote-channel") as TextChannel
-	
+
 			// Button Row
 			const row = new ActionRowBuilder()
 				.addComponents(
@@ -105,31 +105,45 @@ const command: ICommand = {
 						.setLabel('Start Application')
 						.setStyle(ButtonStyle.Danger)
 				)
-	
+
 			// Send message into channel
-			let applicationMessage = await channel.send({embeds: [
-				new EmbedBuilder()
-					.setTitle("Application Process")
-					.setFooter({text: "Attitude (Applications)", iconURL: "https://cdn.discordapp.com/app-icons/1098192239072661606/4eb518a8d9ffca9b7790b96138c2d58e.png?size=256"})
-					.setColor([235, 79, 52])
-					.setDescription(`Hello and welcome to our Discord server! We're thrilled to have you here and excited to hear that you're interested in joining Attitude. You can find instructions on how our application process works below.`)
-					.addFields(
-						{name: "1. Private Channel", value: "Click the 'Start Application' button to create a dedicated channel for your application. This channel will only be accessible to you and our members.", inline: false},
-						{name: "2. Introduction", value: "We would appreciate it if you could introduce yourself to us. The bot will provide you with some example questions to help you get started.", inline: false},
-						{name: "3. Voting", value: "Once you've introduced yourself, we will commence an internal voting process and contact you as soon as possible.", inline: false},
-					)
-			], components: [ row as any ]})
+			let applicationMessage = await channel.send({content: "_tmp_", components: [ row as any ]})
 	
 			// Edit Guildconfig
 			guildconfig.applicationMessage[applicationMessage.id] = {
 				applicationCategory: category.id, 
 				openApplicants: [],
-				voteChannel: voteChannel.id
+				voteChannel: voteChannel.id,
+				introductionTitle: undefined,
+				introductionContent: undefined,
+				initialApplicationText: undefined
 			}
 			guildconfig.flush()
-	
-	
-			return res({status: true, message: `done`, ephermal: true})
+			
+			// Send a modal to the user asking for the introduction and initial-application-message
+			const modal = new ModalBuilder()
+				.setCustomId(`1-setup-introduction-message-${applicationMessage.id}`)
+				.setTitle('Introduction')
+			modal.addComponents(
+				new ActionRowBuilder().addComponents(
+					new TextInputBuilder()
+						.setCustomId('introduction-title')
+						.setLabel("The title for the introduction message")
+						.setStyle(TextInputStyle.Short)) as ActionRowBuilder<TextInputBuilder>,
+				new ActionRowBuilder().addComponents(
+					new TextInputBuilder()
+						.setCustomId('introduction-content')
+						.setLabel("The content for the introduction message")
+						.setStyle(TextInputStyle.Paragraph)) as ActionRowBuilder<TextInputBuilder>,
+				new ActionRowBuilder().addComponents(
+					new TextInputBuilder()
+						.setCustomId('initial-application-text')
+						.setLabel("The message to send in the new channels")
+						.setStyle(TextInputStyle.Paragraph)) as ActionRowBuilder<TextInputBuilder>
+			);
+			interaction.showModal(modal)
+
+			return res({status: true})
 		})
 	}
 }

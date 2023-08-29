@@ -1,12 +1,12 @@
 import { ChatInputCommandInteraction, CacheType, SlashCommandBuilder, GuildMember, GuildTextBasedChannel, TextChannel, CategoryChannel, Guild, PermissionsBitField, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, Interaction, ButtonInteraction, GuildChannel, ChannelType, ContextMenuCommandAssertions, DiscordAPIError } from "discord.js";
 import { GuildConfigManager, IGuildConfig, IGuildConfigExtra } from "../GuildConfig";
-import { ICommand } from "../ICommand";
+import { IInteraction } from "../IInteraction";
 import { IPromiseStatus } from "../IPromiseStatus";
 import dedent from "dedent-js";
 
 
 const commandName = "startapplication"
-const command: ICommand = {
+const command: IInteraction = {
 	name: commandName,
 	
 	checkPermission: async function (i: Interaction<CacheType>): Promise<IPromiseStatus> {
@@ -19,7 +19,7 @@ const command: ICommand = {
 			// Check if button is even associated to a current application process
 			if(!(interaction.message.id in guildconfig.applicationMessage))
 				return resolve({status: false, message: "Button is not associated to any application channel", ephermal: true})
-			
+
 			// Check if member has an open application already
 			let alreadyOpenFoundIndex = guildconfig.applicationMessage[interaction.message.id].openApplicants.findIndex((o) => o.memberId === member.id)
 			if(alreadyOpenFoundIndex !== -1) {
@@ -64,23 +64,7 @@ const command: ICommand = {
 
 
 			// Send Info into private channel
-			newChannel.send({content: dedent`
-				Hello ${member.toString()}! 
-				
-				Please take a moment to introduce yourself to the group using the following questions as a guideline:
-
-				• Please provide a brief introduction of yourself, including your name and age.
-				• Who are you in-game? What is your character's job class, level, and name?
-				• What is your focus in this game? Do you prefer PvE, PvP, or something else entirely?
-				• Have you been in any guilds before? If so, which guilds and why did you leave?
-				• What are your expectations for our guild? What are you hoping to get out of being a part of this group?
-				• What can we expect from you as a guildmate? How do you plan to contribute to the group?
-				• Do you already know any of our current members? If so, who?
-				• How active are you in the game? How often do you usually play?
-				• Is there anything else you would like to share about yourself?
-				
-				Please answer these questions in a reply to this message so that we can get to know you better. Thank you!
-			`})
+			newChannel.send({content: guildconfig.applicationMessage[interaction.message.id].initialApplicationText})
 
 			// Generate a vote
 			let voteChannel = await interaction.guild?.channels.fetch(guildconfig.applicationMessage[interaction.message.id].voteChannel) as TextChannel
