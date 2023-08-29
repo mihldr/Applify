@@ -19,7 +19,7 @@ interface IGuildConfigExtra extends IGuildConfig {
  * Basic persistence using local json files
  */
 class GuildConfigManager {
-	private static DEFAULT_PATH: string = "./guildconfigs"
+	private static DEFAULT_PATH: string = "./../resource/guildconfigs"
 
 	private configPath: string
 
@@ -27,7 +27,7 @@ class GuildConfigManager {
 		this.configPath = path
 
 		if(!fs.existsSync(this.configPath))
-			fs.mkdirSync(this.configPath)
+			fs.mkdirSync(this.configPath, { recursive: true })
 	}
 
 	/** Get a guildconfig with extra functions to flush/persist changes. 
