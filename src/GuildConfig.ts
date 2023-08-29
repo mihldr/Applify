@@ -1,4 +1,3 @@
-import { Guild } from 'discord.js'
 import * as fs from 'node:fs'
 
 interface IGuildConfig {
@@ -16,6 +15,9 @@ interface IGuildConfigExtra extends IGuildConfig {
 	flush: () => void
 }
 
+/** Singleton class to manage all discord servers this bot is in.
+ * Basic persistence using local json files
+ */
 class GuildConfigManager {
 	private static DEFAULT_PATH: string = "./guildconfigs"
 
@@ -28,6 +30,12 @@ class GuildConfigManager {
 			fs.mkdirSync(this.configPath)
 	}
 
+	/** Get a guildconfig with extra functions to flush/persist changes. 
+	 * Generates a default config if isn't existing yet.
+	 * 
+	 * @param guildId The guildconfig given by its guild id to fetch
+	 * @returns 
+	 */
 	public get(guildId: string): IGuildConfigExtra {
 		let guildconfigLoaded = this.loadGuildConfig(guildId)
 		
@@ -49,7 +57,11 @@ class GuildConfigManager {
 		return guildConfig
 	}
 
-	private loadGuildConfig(guildId: string, forceRefresh: boolean = false): IGuildConfig {
+
+	/** Method to read the local json file and parse its content
+	 * 
+	 */
+	private loadGuildConfig(guildId: string): IGuildConfig {
 		const filePath = `${this.configPath}/${guildId}.json`
 
 		if(!fs.existsSync(filePath))
@@ -58,6 +70,12 @@ class GuildConfigManager {
 		return JSON.parse(fs.readFileSync(filePath).toString()) as IGuildConfig
 	}
 
+
+	/** Create a default guild config 
+	 * 
+	 * @param filePath 
+	 * @param guildId 
+	 */
 	private static createDefaultConfig(filePath: string, guildId: string) {
 		const guildConfig: IGuildConfig = {
 			applicationMessage: {}
@@ -66,6 +84,9 @@ class GuildConfigManager {
 		fs.writeFileSync(filePath, JSON.stringify(guildConfig))
 	}
 
+	/** Singleton pattern
+	 * 
+	 */
 	private static INSTANCE: GuildConfigManager
 	public static i(path: string = GuildConfigManager.DEFAULT_PATH): GuildConfigManager {
 		if(!GuildConfigManager.INSTANCE)
