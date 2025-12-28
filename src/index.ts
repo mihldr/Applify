@@ -26,7 +26,7 @@ const guilconfigMgr: GuildConfigManager = GuildConfigManager.i();
 		const data: any = await rest.put(Routes.applicationCommands(process.env.DISCORD_CLIENT_ID || ""), { body: interactionManager.getSlashCommandsAsJSON() });		
 
 		await client.login(process.env.DISCORD_TOKEN || "")
-		console.log(`Logged in! (Managing dungeons raids for ${(await client.guilds.fetch()).size} Guild)`)
+		console.log(`Logged in! (Managing applications for ${(await client.guilds.fetch()).size} guild(-s))`)
 	} catch(error: any) {
 		console.error("Application Error! Exiting....");		
 		console.error(error)

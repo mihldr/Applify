@@ -39,7 +39,7 @@ const command: IInteraction = {
 			// Edit message
 			await message.edit({content: "", embeds: [new EmbedBuilder()
 				.setTitle(introductionTitle)
-				.setFooter({text: "Application Bot by ShynoX", iconURL: "https://cdn.discordapp.com/app-icons/1146028585107345538/5800697528f5fdc3b9b80d588ef41efa.png?size=256"})
+				.setFooter({text: "Application Bot", iconURL: "https://cdn.discordapp.com/app-icons/1146028585107345538/5800697528f5fdc3b9b80d588ef41efa.png?size=256"})
 				.setColor([235, 79, 52])
 				.setDescription(introductionContent)				
 			]})
